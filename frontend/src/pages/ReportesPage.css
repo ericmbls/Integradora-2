@@ -1,0 +1,214 @@
+.reportes-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+/* Métricas */
+.metricas-section {
+  margin-bottom: 40px;
+}
+
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.metrica-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.metrica-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.metrica-info p {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.metrica-info h3 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+/* Filtros */
+.filtros-section {
+  margin-bottom: 40px;
+}
+
+.filtros-section h2 {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 15px 0;
+  color: #1a1a1a;
+  letter-spacing: 0.3px;
+}
+
+.filtros-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filtro-group {
+  flex: 1;
+  min-width: 150px;
+}
+
+.filtro-fecha,
+.filtro-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fef8f3;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filtro-fecha:focus,
+.filtro-select:focus {
+  outline: none;
+  border-color: #8B6F47;
+  box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+}
+
+.btn-aplicar {
+  background: #8B6F47;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-aplicar:hover {
+  background: #734d2f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabla */
+.tabla-section {
+  margin-bottom: 40px;
+}
+
+.tabla-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  color: #1a1a1a;
+}
+
+.tabla-responsive {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+.reportes-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reportes-tabla thead {
+  background: #fef8f3;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.reportes-tabla th {
+  padding: 15px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  background: #fef8f3;
+}
+
+.reportes-tabla td {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #666;
+}
+
+.reportes-tabla tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-badge.exacto {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-badge.exceso {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.estado-badge.deficiencia {
+  background: #fff3cd;
+  color: #856404;
+}
+
+@media (max-width: 768px) {
+  .reportes-content {
+    padding: 20px;
+  }
+
+  .metricas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-aplicar {
+    width: 100%;
+  }
+
+  .tabla-responsive {
+    overflow-x: auto;
+  }
+
+  .reportes-tabla th,
+  .reportes-tabla td {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+}

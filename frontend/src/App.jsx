@@ -1,19 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import CultivosPage from './pages/CultivosPage';
+import ReportesPage from './pages/ReportesPage';
+import UsuariosPage from './pages/UsuariosPage';
 
 function App() {
-  const [msg, setMsg] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
-  useEffect(() => {
-    fetch('http://localhost:3000/ping')
-      .then(res => res.json())
-      .then(data => setMsg(data.message))
-      .catch(err => console.error(err));
-  }, []);
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+  };
+
+  if (!isLoggedIn) {
+    return <LoginPage setIsLoggedIn={setIsLoggedIn} />;
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-2xl">{msg || 'Conectando...'}</h1>
-    </div>
+    <>
+      {currentPage === 'dashboard' && <DashboardPage onNavigate={handleNavigate} currentPage={currentPage} />}
+      {currentPage === 'cultivos' && <CultivosPage onNavigate={handleNavigate} currentPage={currentPage} />}
+      {currentPage === 'reportes' && <ReportesPage onNavigate={handleNavigate} currentPage={currentPage} />}
+      {currentPage === 'usuarios' && <UsuariosPage onNavigate={handleNavigate} currentPage={currentPage} />}
+    </>
   );
 }
 

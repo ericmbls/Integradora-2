@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Edit2, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import './UsuariosPage.css';
@@ -72,7 +73,7 @@ export default function UsuariosPage({ onNavigate, currentPage }) {
     <div className="dashboard-layout">
       <Sidebar onNavigate={onNavigate} currentPage={currentPage} />
       <div className="dashboard-main">
-        <Header onAddCultivo={() => {}} />
+        <Header onAddCultivo={() => { }} />
         <div className="usuarios-content">
           <div className="usuarios-tabs">
             <button
@@ -111,10 +112,10 @@ export default function UsuariosPage({ onNavigate, currentPage }) {
                       <span className="role-badge">{usuario.role}</span>
                     </td>
                     <td>
-                      <button className="btn-action btn-edit">✏️</button>
+                      <button className="btn-action btn-edit"><Edit2 size={16} /></button>
                     </td>
                     <td>
-                      <button className="btn-action btn-delete">🗑️</button>
+                      <button className="btn-action btn-delete"><Trash2 size={16} /></button>
                     </td>
                   </tr>
                 ))}

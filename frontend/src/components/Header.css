@@ -3,8 +3,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 30px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(15,23,42,0.04);
   gap: 20px;
 }
 
@@ -27,7 +27,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #8B6F47;
+  border-color: var(--primary);
   background: white;
 }
 
@@ -44,24 +44,26 @@
   color: #999;
 }
 
+
 .btn-add-cultivo {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
   background: white;
-  border: 2px solid #8B6F47;
+  border: 2px solid var(--primary);
   border-radius: 8px;
-  color: #8B6F47;
+  color: var(--primary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .btn-add-cultivo:hover {
-  background: #8B6F47;
+  background: var(--primary);
   color: white;
+  transform: translateY(-2px);
 }
 
 .btn-add-cultivo span {

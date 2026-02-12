@@ -1,3 +1,4 @@
+import { Upload, X } from 'lucide-react';
 import './AddCultivoModal.css';
 
 export default function AddCultivoModal({ isOpen, onClose }) {
@@ -8,13 +9,13 @@ export default function AddCultivoModal({ isOpen, onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Añadir cultivo</h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}><X size={20} /></button>
         </div>
 
         <div className="modal-body">
           <div className="upload-section">
             <div className="image-upload">
-              <span>📁</span>
+              <span><Upload size={32} /></span>
               <p>Subir imagen</p>
             </div>
           </div>

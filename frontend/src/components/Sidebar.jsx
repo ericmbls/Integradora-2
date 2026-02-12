@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { LayoutDashboard, Sprout, BarChart3, Users, Settings } from 'lucide-react';
+import logo from '../assets/logo.png';
 import './Sidebar.css';
 
 export default function Sidebar({ onNavigate, currentPage }) {
@@ -6,7 +7,7 @@ export default function Sidebar({ onNavigate, currentPage }) {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="logo">
-          <span>🌼</span>
+          <img src={logo} alt="Xihuitl" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
           <h1>Xihuitl</h1>
         </div>
       </div>
@@ -16,35 +17,35 @@ export default function Sidebar({ onNavigate, currentPage }) {
           className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
           onClick={() => onNavigate('dashboard')}
         >
-          <span className="nav-icon">📊</span>
+          <span className="nav-icon"><LayoutDashboard size={20} /></span>
           <span>Dashboard</span>
         </button>
         <button
           className={`nav-item ${currentPage === 'cultivos' ? 'active' : ''}`}
           onClick={() => onNavigate('cultivos')}
         >
-          <span className="nav-icon">🌱</span>
+          <span className="nav-icon"><Sprout size={20} /></span>
           <span>Cultivos</span>
         </button>
         <button
           className={`nav-item ${currentPage === 'reportes' ? 'active' : ''}`}
           onClick={() => onNavigate('reportes')}
         >
-          <span className="nav-icon">📈</span>
+          <span className="nav-icon"><BarChart3 size={20} /></span>
           <span>Reportes</span>
         </button>
         <button
           className={`nav-item ${currentPage === 'usuarios' ? 'active' : ''}`}
           onClick={() => onNavigate('usuarios')}
         >
-          <span className="nav-icon">👥</span>
+          <span className="nav-icon"><Users size={20} /></span>
           <span>Usuarios</span>
         </button>
         <button
-          className="nav-item"
+          className={`nav-item ${currentPage === 'ajustes' ? 'active' : ''}`}
           onClick={() => onNavigate('ajustes')}
         >
-          <span className="nav-icon">⚙️</span>
+          <span className="nav-icon"><Settings size={20} /></span>
           <span>Ajustes</span>
         </button>
       </nav>

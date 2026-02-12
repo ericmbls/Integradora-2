@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Filter, Droplets, RefreshCw, Sprout, BarChart3 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import './ReportesPage.css';
@@ -41,27 +42,27 @@ export default function ReportesPage({ onNavigate, currentPage }) {
     <div className="dashboard-layout">
       <Sidebar onNavigate={onNavigate} currentPage={currentPage} />
       <div className="dashboard-main">
-        <Header onAddCultivo={() => {}} />
+        <Header onAddCultivo={() => { }} />
         <div className="reportes-content">
           {/* Sección de Métricas */}
           <section className="metricas-section">
             <div className="metricas-grid">
               <div className="metrica-card">
-                <div className="metrica-icon">💧</div>
+                <div className="metrica-icon"><Droplets size={24} /></div>
                 <div className="metrica-info">
                   <p>Agua consumida</p>
                   <h3>1,200 L</h3>
                 </div>
               </div>
               <div className="metrica-card">
-                <div className="metrica-icon">🔄</div>
+                <div className="metrica-icon"><RefreshCw size={24} /></div>
                 <div className="metrica-info">
                   <p>Riegos realizados</p>
                   <h3>16</h3>
                 </div>
               </div>
               <div className="metrica-card">
-                <div className="metrica-icon">🌱</div>
+                <div className="metrica-icon"><Sprout size={24} /></div>
                 <div className="metrica-info">
                   <p>Cultivos activos</p>
                   <h3>20</h3>
@@ -72,7 +73,7 @@ export default function ReportesPage({ onNavigate, currentPage }) {
 
           {/* Sección de Filtros */}
           <section className="filtros-section">
-            <h2>🔍 Filtros</h2>
+            <h2><Filter size={20} /> Filtros</h2>
             <div className="filtros-container">
               <div className="filtro-group">
                 <input
@@ -100,7 +101,7 @@ export default function ReportesPage({ onNavigate, currentPage }) {
 
           {/* Sección de Reportes */}
           <section className="tabla-section">
-            <h2>📊 Reportes de riego</h2>
+            <h2><BarChart3 size={20} /> Reportes de riego</h2>
             <div className="tabla-responsive">
               <table className="reportes-tabla">
                 <thead>

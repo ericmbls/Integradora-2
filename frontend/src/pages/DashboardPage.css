@@ -36,15 +36,14 @@
 
 .kpi-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-  /* Sombra suave */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid #f3e8dc;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
 }
 
 .kpi-card:hover {
@@ -346,6 +345,96 @@
     grid-template-columns: repeat(4, 1fr);
     /* Mantener si cabe, o bajar a 2 */
   }
+}
+
+/* Mapa de Zonas */
+.zones-grid-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Cultivos Recientes */
+.recent-cultivos {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.recent-cultivos h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.cultivos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.cultivo-item {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.cultivo-item:hover {
+  border-color: #8B6F47;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cultivo-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.cultivo-status-saludable {
+  background: #22c55e;
+}
+
+.cultivo-status-requiere_atencion {
+  background: #eab308;
+}
+
+.cultivo-status-critico {
+  background: #ef4444;
+}
+
+.cultivo-item h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.mt-2 {
+  margin-top: 8px;
 }
 
 @media (max-width: 600px) {

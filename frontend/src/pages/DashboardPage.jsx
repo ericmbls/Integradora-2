@@ -1,22 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Sprout, AlertCircle, Download, Activity,
+  Sprout, AlertCircle, ListTodo, Activity,
   Droplets, Thermometer, Wind, CloudSun, CloudRain, Sun
 } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
-import AddCultivoModal from '../components/AddCultivoModal';
+import Header from '../components/common/Header';
+import { HeatmapZones } from '../components/common/HeatmapZones';
+import { CultivoFormModal } from '../components/modals/CultivoFormModal';
+import { cultivosService } from '../services/cultivosService';
 import './DashboardPage.css';
 
-export default function DashboardPage({ onNavigate, currentPage }) {
+export default function DashboardPage() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [cultivos, setCultivos] = useState([]);
+  const [zonas, setZonas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mocks
+  useEffect(() => {
+    // API CALL: Fetch cultivos y zonas desde backend
+    const cargarDatos = async () => {
+      setLoading(true);
+      try {
+        const cultivosFetch = await cultivosService.getCultivos();
+        const zonasFetch = await cultivosService.getZonas();
+        setCultivos(cultivosFetch);
+        setZonas(zonasFetch);
+      } catch (error) {
+        console.error('Error cargando datos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarDatos();
+  }, []);
+
+  // Calcular KPIs basados en datos
+  const totalCultivos = cultivos.length;
+  const alertasActivas = cultivos.filter(c => c.estado === 'requiere_atencion' || c.estado === 'critico').length;
+  const tareasPendientes = cultivos.filter(c => 
+    !c.ultimo_riego || new Date(c.ultimo_riego) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  ).length;
+
   const kpis = [
-    { title: 'Total de cultivos', value: '12', sub: '+2 este mes', icon: <Sprout size={20} />, status: 'neutral' },
-    { title: 'Alertas Activas', value: '3', sub: 'Ver Alertas', icon: <AlertCircle size={20} />, status: 'danger' },
-    { title: 'Estado del Sistema', value: '98%', sub: 'Operativo', icon: <Download size={20} />, status: 'success' }, // Icono download aprox
-    { title: 'Salud Promedio', value: '94%', sub: 'Excelente', icon: <Activity size={20} />, status: 'success' },
+    { 
+      title: 'Total de cultivos', 
+      value: totalCultivos, 
+      sub: 'Cultivos activos', 
+      icon: <Sprout size={20} />, 
+      status: 'neutral' 
+    },
+    { 
+      title: 'Alertas Activas', 
+      value: alertasActivas, 
+      sub: 'Requieren atención', 
+      icon: <AlertCircle size={20} />, 
+      status: alertasActivas > 0 ? 'danger' : 'success' 
+    },
+    { 
+      title: 'Tareas Pendientes', 
+      value: tareasPendientes, 
+      sub: 'Riegos y cuidados', 
+      icon: <ListTodo size={20} />, 
+      status: tareasPendientes > 3 ? 'warning' : 'success' 
+    },
+    { 
+      title: 'Salud Promedio', 
+      value: '94%', 
+      sub: 'Estado general', 
+      icon: <Activity size={20} />, 
+      status: 'success' 
+    },
   ];
 
   const pronostico = [
@@ -27,129 +79,71 @@ export default function DashboardPage({ onNavigate, currentPage }) {
     { day: 'Vie', icon: <Sun size={18} color="#F59E0B" />, temp: '25°' },
   ];
 
-  const zonasCultivo = [
-    { name: 'Tomate', lugar: 'Campo A', humedad: '72%', temp: '24°C', status: 'ok' },
-    { name: 'Lechuga', lugar: 'Hidropónico', humedad: '68%', temp: '22°C', status: 'ok' },
-    { name: 'Pimientos', lugar: 'Invernadero', humedad: '65%', temp: '26°C', status: 'alert' },
-    { name: 'Fresa', lugar: 'Campo B', humedad: '75%', temp: '21°C', status: 'ok' },
-  ];
-
-  // Generar zonas para heatmap (1-16)
-  const heatmapZones = Array.from({ length: 16 }, (_, i) => ({
-    id: i + 1,
-    status: [6, 12].includes(i + 1) ? 'alert' : 'ok' // Zonas 6 y 12 en alerta roja visualmente
-  }));
-
   return (
-    <div className="dashboard-layout">
-      <Sidebar onNavigate={onNavigate} currentPage={currentPage} />
-      <div className="dashboard-main">
-        <Header onAddCultivo={() => setShowAddModal(true)} title="Dashboard" />
+    <>
+      <Header onAddCultivo={() => setShowAddModal(true)} title="Dashboard" />
 
-        <div className="dashboard-content">
-          {/* 1. KPIs */}
-          <section className="kpi-grid">
-            {kpis.map((kpi, idx) => (
-              <div key={idx} className={`kpi-card ${kpi.status}`}>
-                <div className="kpi-header">
-                  <span>{kpi.title}</span>
-                  <div className="kpi-icon">{kpi.icon}</div>
-                </div>
-                <div className="kpi-value">{kpi.value}</div>
-                <div className={`kpi-sub ${kpi.status}`}>{kpi.sub}</div>
+      <div className="dashboard-content">
+        {/* 1. KPIs */}
+        <section className="kpi-grid">
+          {kpis.map((kpi, idx) => (
+            <div key={idx} className={`kpi-card ${kpi.status}`}>
+              <div className="kpi-header">
+                <span>{kpi.title}</span>
+                <div className="kpi-icon">{kpi.icon}</div>
+              </div>
+              <div className="kpi-value">{kpi.value}</div>
+              <div className={`kpi-sub ${kpi.status}`}>{kpi.sub}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* 2. Mapa de Zonas */}
+        <section className="zones-grid-section">
+          <HeatmapZones zonas={zonas} editable={false} />
+        </section>
+
+        {/* 3. Pronóstico */}
+        <section className="forecast-card">
+          <h3>Pronóstico de la Semana</h3>
+          <div className="forecast-list">
+            {pronostico.map((day, idx) => (
+              <div key={idx} className="forecast-item">
+                <span>{day.day}</span>
+                <div className="forecast-icon">{day.icon}</div>
+                <span className="forecast-temp">{day.temp}</span>
               </div>
             ))}
-          </section>
+          </div>
+        </section>
 
-          {/* 2. Heatmap & Pronóstico */}
-          <section className="middle-section">
-            <div className="heatmap-card">
-              <h3>Mapa de Calor</h3>
-              <div className="heatmap-grid">
-                {heatmapZones.map((zone) => (
-                  <div key={zone.id} className={`heatmap-zone zone-${zone.status}`}>
-                    Zona {zone.id}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="forecast-card">
-              <h3>Pronóstico</h3>
-              <div className="forecast-list">
-                {pronostico.map((day, idx) => (
-                  <div key={idx} className="forecast-item">
-                    <span>{day.day}</span>
-                    <div className="forecast-icon">{day.icon}</div>
-                    <span className="forecast-temp">{day.temp}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* 3. Zonas Detalladas */}
-          <section className="zones-section">
-            {zonasCultivo.map((zona, idx) => (
-              <div key={idx} className={`zone-card ${zona.status === 'alert' ? 'zone-alert-border' : ''}`}>
-                <div className="zone-header">
-                  <div>
-                    <h4>{zona.name}</h4>
-                    <span className="zone-location">{zona.lugar}</span>
-                  </div>
-                  {zona.status === 'ok' ? (
-                    <span className="check-icon">✓</span>
-                  ) : (
-                    <AlertCircle size={18} className="alert-icon-red" />
-                  )}
-                </div>
-                <div className="zone-metrics">
-                  <div className="z-metric">
-                    <Droplets size={14} />
-                    <span>Humedad</span>
-                    <strong>{zona.humedad}</strong>
-                  </div>
-                  <div className="z-metric">
-                    <CloudSun size={14} /> {/* Icono temp */}
-                    <span>Temperatura</span>
-                    <strong>{zona.temp}</strong>
-                  </div>
-                </div>
+        {/* 4. Últimos Cultivos */}
+        <section className="recent-cultivos">
+          <h3>Cultivos Recientes</h3>
+          <div className="cultivos-grid">
+            {cultivos.slice(0, 3).map(cultivo => (
+              <div key={cultivo.id} className="cultivo-item">
+                <div className={`cultivo-status cultivo-status-${cultivo.estado}`}></div>
+                <h4>{cultivo.nombre_cultivo}</h4>
+                <p className="text-sm text-gray-600">{cultivo.variedad}</p>
+                <p className="text-xs text-gray-500 mt-2">Zona: {cultivo.zona_id}</p>
               </div>
             ))}
-          </section>
+          </div>
+        </section>
 
-          {/* 4. Gráfica Caudal */}
-          <section className="chart-section">
-            <div className="chart-header">
-              <h3>Caudal Actual</h3>
-              <div className="chart-value-big">
-                54.2 L/min
-                <span>Promedio 24h</span>
-              </div>
-            </div>
-            <div className="chart-container">
-              {/* SVG Simple Chart */}
-              <svg viewBox="0 0 1000 200" className="caudal-chart">
-                {/* Línea suave dibujada a mano (mock) */}
-                <path d="M0,150 C100,140 200,140 300,170 C400,200 500,100 600,110 C700,120 800,180 900,190 L1000,200"
-                  fill="none" stroke="#9ca3af" strokeWidth="3" opacity="0.5" />
-                <path d="M0,140 C150,130 300,180 450,120 S750,150 1000,180"
-                  fill="none" stroke="#8B6F47" strokeWidth="4" />
-                {/* Ejes simulados */}
-                <line x1="0" y1="190" x2="1000" y2="190" stroke="#ddd" strokeWidth="2" />
-                <text x="10" y="210" fill="#999" fontSize="12">00:00</text>
-                <text x="250" y="210" fill="#999" fontSize="12">04:00</text>
-                <text x="500" y="210" fill="#999" fontSize="12">08:00</text>
-                <text x="750" y="210" fill="#999" fontSize="12">12:00</text>
-                <text x="950" y="210" fill="#999" fontSize="12">24:00</text>
-              </svg>
-            </div>
-          </section>
-
-        </div>
       </div>
-      <AddCultivoModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
-    </div>
+      <CultivoFormModal 
+        cultivo={null}
+        zonas={zonas}
+        onGuardar={async (datos) => {
+          // API CALL: POST /api/cultivos
+          await cultivosService.crearCultivo(datos);
+          setShowAddModal(false);
+          // Reload cultivos
+        }}
+        onCerrar={() => setShowAddModal(false)}
+      />
+    </>
   );
 }

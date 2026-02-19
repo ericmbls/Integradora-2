@@ -1,8 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, Facebook, Chrome, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { useAlert } from '../hooks/useAlert';
 import './LoginForm.css';
 
-export default function LoginForm({ onLogin, mode = 'login' }) {
+export default function LoginForm({ mode = 'login' }) {
+  const navigate = useNavigate();
+  const { login, error: authError, loading } = useAuth();
+  const { showSuccess, showError } = useAlert();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -73,25 +79,26 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
     const validationErrors = validate(formData);
     setErrors(validationErrors);
     setTouched({ email: true, password: true, confirmPassword: true });
+    
     if (Object.keys(validationErrors).length === 0) {
-      const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
-      const body = mode === 'login'
-        ? { email: formData.email, password: formData.password }
-        : { name: formData.name, email: formData.email, password: formData.password };
       try {
-        const res = await fetch(`http://localhost:3000${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) throw new Error('Error en autenticación');
-        const data = await res.json();
-        const token = data.access_token || btoa(`${formData.email}:${Date.now()}`);
-        if (remember) localStorage.setItem('authToken', token);
-        else sessionStorage.setItem('authToken', token);
-        onLogin();
+        await login(formData.email, formData.password);
+        if (remember) localStorage.setItem('authToken', 'true');
+        
+        // Mostrar alerta de éxito según el modo
+        if (mode === 'login') {
+          showSuccess('¡Iniciaste sesión correctamente!');
+        } else {
+          showSuccess('¡Te registraste correctamente! Iniciando sesión...');
+        }
+        
+        // Esperar un poco para que se vea la alerta antes de navegar
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
       } catch (err) {
-        alert(err.message);
+        showError(err.message || 'Error al iniciar sesión');
+        setErrors({ submit: err.message });
       }
     }
   };
@@ -107,6 +114,13 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
         <p className="form-subtitle">{mode === 'login' ? 'Ingresa tus credenciales para acceder' : 'Rellena los datos para registrarte'}</p>
       </div>
       <form onSubmit={handleSubmit} className="login-form" noValidate>
+        {(authError || errors.submit) && (
+          <div className="error-alert">
+            <AlertCircle size={16} />
+            <span>{authError || errors.submit}</span>
+          </div>
+        )}
+        
         <div className={`form-group ${errors.email && touched.email ? 'has-error' : ''}`}>
           <label htmlFor="email">Correo Electrónico</label>
           <div className="input-wrapper">
@@ -120,6 +134,7 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
               onChange={handleChange}
               onBlur={handleBlur}
               className="form-input has-icon-left"
+              disabled={loading}
             />
           </div>
           {errors.email && touched.email && (
@@ -128,6 +143,7 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
             </span>
           )}
         </div>
+        
         <div className={`form-group ${errors.password && touched.password ? 'has-error' : ''}`}>
           <label htmlFor="password">Contraseña</label>
           <div className="input-wrapper">
@@ -142,11 +158,13 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
               onBlur={handleBlur}
               className="form-input has-icon-left has-icon-right"
               autoComplete="new-password"
+              disabled={loading}
             />
             <button
               type="button"
               className="password-toggle"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={loading}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -176,11 +194,13 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 className="form-input has-icon-left has-icon-right"
+                disabled={loading}
               />
               <button
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loading}
               >
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -192,19 +212,22 @@ export default function LoginForm({ onLogin, mode = 'login' }) {
             )}
           </div>
         )}
+        
         <div className="form-options">
           <label className="remember-me">
             <input
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
+              disabled={loading}
             />
             <span>Recordarme</span>
           </label>
           <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
         </div>
-        <button type="submit" className="login-button">
-          {mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+        
+        <button type="submit" className="login-button" disabled={loading}>
+          {loading ? 'Cargando...' : (mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta')}
         </button>
         <div className="divider">
           <span>O continuar con</span>

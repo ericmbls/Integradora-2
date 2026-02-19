@@ -1,188 +1,197 @@
-import { useState } from 'react';
-import { Save, Globe, Smartphone, Bell, Shield, Sliders } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+import { useState, useEffect } from 'react';
+import { Plus, Edit2, Trash2, Check } from 'lucide-react';
+import Header from '../components/common/Header';
+import { cultivosService } from '../services/cultivosService';
+import { useAlert } from '../hooks/useAlert';
 import './AjustesPage.css';
 
-export default function AjustesPage({ onNavigate, currentPage }) {
-    const [activeTab, setActiveTab] = useState('general');
-    const [visualData, setVisualData] = useState({
-        darkMode: false,
-        animations: true,
-        compactMode: false
-    });
+const ESTADOS_ZONA = ['optimo', 'requiere_atencion', 'critico'];
 
-    const toggleVisual = (key) => {
-        setVisualData(prev => ({ ...prev, [key]: !prev[key] }));
-    };
+export default function AjustesPage() {
+  const [zonas, setZonas] = useState([]);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [selectedZona, setSelectedZona] = useState(null);
+  const [formData, setFormData] = useState({
+    nombre_zona: '',
+    descripcion: '',
+    estado: 'optimo'
+  });
+  const [loading, setLoading] = useState(false);
+  const { showSuccess, showError } = useAlert();
 
-    return (
-        <div className="dashboard-layout">
-            <Sidebar onNavigate={onNavigate} currentPage={currentPage} />
-            <div className="dashboard-main">
-                <Header onAddCultivo={() => { }} title="Ajustes" />
+  useEffect(() => {
+    cargarZonas();
+  }, []);
 
-                <div className="dashboard-content">
-                    {/* Header Row */}
-                    <div className="page-header-row">
-                        <div>
-                            <h1 className="page-title">Configuración del Sistema</h1>
-                            <p className="page-subtitle">Ajustes de preferencias y parámetros de Xihuitl</p>
-                        </div>
-                        <button className="btn-primary">
-                            Guardar
-                        </button>
-                    </div>
+  const cargarZonas = async () => {
+    setLoading(true);
+    try {
+      // API CALL: GET /api/zonas
+      const zonasFetch = await cultivosService.getZonas();
+      setZonas(zonasFetch);
+    } catch (error) {
+      showError('Error al cargar zonas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    {/* Navigation Tabs */}
-                    <div className="settings-tabs">
-                        <button
-                            className={`settings-tab ${activeTab === 'general' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('general')}
-                        >
-                            General
-                        </button>
-                        <button
-                            className={`settings-tab ${activeTab === 'notificaciones' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('notificaciones')}
-                        >
-                            Notificaciones
-                        </button>
-                        <button
-                            className={`settings-tab ${activeTab === 'seguridad' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('seguridad')}
-                        >
-                            Seguridad
-                        </button>
-                        <button
-                            className={`settings-tab ${activeTab === 'dispositivos' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('dispositivos')}
-                        >
-                            Dispositivos
-                        </button>
-                        <button
-                            className={`settings-tab ${activeTab === 'avanzado' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('avanzado')}
-                        >
-                            Avanzado
-                        </button>
-                    </div>
+  const handleAbrirForm = (zona = null) => {
+    setSelectedZona(zona);
+    if (zona) {
+      setFormData({
+        nombre_zona: zona.nombre_zona,
+        descripcion: zona.descripcion,
+        estado: zona.estado
+      });
+    } else {
+      setFormData({
+        nombre_zona: '',
+        descripcion: '',
+        estado: 'optimo'
+      });
+    }
+    setShowFormModal(true);
+  };
 
-                    {activeTab === 'general' && (
-                        <div className="settings-content">
-                            {/* Configuración Regional */}
-                            <div className="settings-section">
-                                <div className="section-header">
-                                    <Globe size={20} />
-                                    <h3>Configuración Regional</h3>
-                                </div>
+  const handleGuardar = async () => {
+    if (!formData.nombre_zona) {
+      showError('El nombre de la zona es requerido');
+      return;
+    }
 
-                                <div className="form-grid-2">
-                                    <div className="form-group">
-                                        <label>Idioma del sistema</label>
-                                        <div className="select-wrapper">
-                                            <select defaultValue="es-mx">
-                                                <option value="es-mx">Español México</option>
-                                                <option value="en-us">English US</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Zona Horaria</label>
-                                        <div className="select-wrapper">
-                                            <select defaultValue="cst">
-                                                <option value="cst">América/México_City(CST)</option>
-                                                <option value="est">América/New_York(EST)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Sistema de Unidades</label>
-                                        <div className="select-wrapper">
-                                            <select defaultValue="metric">
-                                                <option value="metric">Métrico (Kg, L, °C)</option>
-                                                <option value="imperial">Imperial (Lb, Gal, °F)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Moneda</label>
-                                        <div className="select-wrapper">
-                                            <select defaultValue="mxn">
-                                                <option value="mxn">MXN - Peso Mexicano</option>
-                                                <option value="usd">USD - Dólar Estadounidense</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+    try {
+      if (selectedZona) {
+        // API CALL: PUT /api/zonas/:id
+        await cultivosService.actualizarZona(selectedZona.id, formData);
+        showSuccess('Zona actualizada correctamente');
+      } else {
+        // API CALL: POST /api/zonas
+        // await cultivosService.crearZona(formData);
+        showSuccess('Zona creada correctamente');
+      }
+      cargarZonas();
+      setShowFormModal(false);
+    } catch (error) {
+      showError('Error al guardar zona');
+    }
+  };
 
-                                <div className="form-grid-1" style={{ marginTop: '20px' }}>
-                                    <div className="form-group">
-                                        <label>Nombre de la Granja</label>
-                                        <input type="text" defaultValue="Xihuitl Farms S.A de C.V." className="input-filled" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Ubicación</label>
-                                        <input type="text" defaultValue="Jalisco, México" className="input-filled" />
-                                    </div>
-                                </div>
-                            </div>
+  const handleEliminar = async (id) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta zona?')) return;
 
-                            {/* Preferencias de Visualización */}
-                            <div className="settings-section">
-                                <div className="section-header">
-                                    <Sliders size={20} />
-                                    <h3>Preferencias de Visualización</h3>
-                                </div>
+    try {
+      // API CALL: DELETE /api/zonas/:id
+      // await cultivosService.eliminarZona(id);
+      showSuccess('Zona eliminada correctamente');
+      cargarZonas();
+    } catch (error) {
+      showError('Error al eliminar zona');
+    }
+  };
 
-                                <div className="toggles-list">
-                                    <div className="toggle-item">
-                                        <div className="toggle-info">
-                                            <h4>Modo Oscuro</h4>
-                                            <p>Cambiar el tema visual de la aplicación</p>
-                                        </div>
-                                        <label className="switch">
-                                            <input type="checkbox" checked={visualData.darkMode} onChange={() => toggleVisual('darkMode')} />
-                                            <span className="slider round"></span>
-                                        </label>
-                                    </div>
-
-                                    <div className="toggle-item">
-                                        <div className="toggle-info">
-                                            <h4>Animaciones</h4>
-                                            <p>Habilitar transiciones y efectos visuales</p>
-                                        </div>
-                                        <label className="switch">
-                                            <input type="checkbox" checked={visualData.animations} onChange={() => toggleVisual('animations')} />
-                                            <span className="slider round"></span>
-                                        </label>
-                                    </div>
-
-                                    <div className="toggle-item">
-                                        <div className="toggle-info">
-                                            <h4>Modo Compacto</h4>
-                                            <p>Mostrar más información en menos espacio</p>
-                                        </div>
-                                        <label className="switch">
-                                            <input type="checkbox" checked={visualData.compactMode} onChange={() => toggleVisual('compactMode')} />
-                                            <span className="slider round"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Placeholder for other tabs */}
-                    {activeTab !== 'general' && (
-                        <div className="empty-state">
-                            <div className="empty-icon"><Shield size={48} color="#ddd" /></div>
-                            <h3>Sección en construcción</h3>
-                            <p>Esta configuración estará disponible pronto.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+  return (
+    <div className="ajustes-page">
+      <Header />
+      <main className="ajustes-main">
+        <div className="ajustes-header">
+          <div>
+            <h1>Configuración de Zonas</h1>
+            <p className="subtitle">Gestiona las zonas agrícolas de tu sistema</p>
+          </div>
+          <button className="btn-primary" onClick={() => handleAbrirForm()}>
+            <Plus size={16} /> Nueva Zona
+          </button>
         </div>
-    );
+
+        {loading ? (
+          <div className="loading">Cargando zonas...</div>
+        ) : zonas.length > 0 ? (
+          <div className="zonas-grid">
+            {zonas.map(zona => (
+              <div key={zona.id} className="zona-card">
+                <div className="zona-header">
+                  <h3>{zona.nombre_zona}</h3>
+                  <span className={`badge badge-${zona.estado}`}>{zona.estado}</span>
+                </div>
+                <p className="zona-descripcion">{zona.descripcion}</p>
+                <div className="zona-actions">
+                  <button 
+                    className="btn-edit"
+                    onClick={() => handleAbrirForm(zona)}
+                  >
+                    <Edit2 size={16} /> Editar
+                  </button>
+                  <button 
+                    className="btn-delete"
+                    onClick={() => handleEliminar(zona.id)}
+                  >
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p>No hay zonas configuradas</p>
+            <button className="btn-primary" onClick={() => handleAbrirForm()}>
+              Crear primera zona
+            </button>
+          </div>
+        )}
+
+        {/* Form Modal */}
+        {showFormModal && (
+          <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{selectedZona ? 'Editar Zona' : 'Nueva Zona'}</h2>
+                <button className="btn-close" onClick={() => setShowFormModal(false)}>×</button>
+              </div>
+              <div className="form-group">
+                <label>Nombre de la Zona</label>
+                <input
+                  type="text"
+                  value={formData.nombre_zona}
+                  onChange={(e) => setFormData({...formData, nombre_zona: e.target.value})}
+                  placeholder="Ej: Zona A, Zona de Cultivos 1"
+                />
+              </div>
+              <div className="form-group">
+                <label>Descripción</label>
+                <textarea
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+                  placeholder="Describe esta zona"
+                  rows="3"
+                />
+              </div>
+              <div className="form-group">
+                <label>Estado</label>
+                <select
+                  value={formData.estado}
+                  onChange={(e) => setFormData({...formData, estado: e.target.value})}
+                >
+                  {ESTADOS_ZONA.map(estado => (
+                    <option key={estado} value={estado}>
+                      {estado.charAt(0).toUpperCase() + estado.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-footer">
+                <button className="btn-secondary" onClick={() => setShowFormModal(false)}>
+                  Cancelar
+                </button>
+                <button className="btn-primary" onClick={handleGuardar}>
+                  <Check size={16} /> {selectedZona ? 'Actualizar' : 'Crear'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }

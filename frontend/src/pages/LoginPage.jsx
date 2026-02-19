@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import LoginForm from '../components/LoginForm';
-import BrandingSide from '../components/BrandingSide';
+import BrandingSide from '../components/common/BrandingSide';
 import './LoginPage.css';
 
-export default function LoginPage({ setIsLoggedIn }) {
+export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
 
   return (
@@ -26,7 +26,7 @@ export default function LoginPage({ setIsLoggedIn }) {
               </button>
             </div>
 
-            <LoginForm mode={mode} onLogin={() => setIsLoggedIn(true)} />
+            <LoginForm mode={mode} />
           </div>
         </div>
         <BrandingSide />

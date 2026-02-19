@@ -1,157 +1,172 @@
-import { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
-import EditCultivoModal from '../components/EditCultivoModal';
+import { useState, useEffect } from 'react';
+import Header from '../components/common/Header';
+import { DataTable } from '../components/common/DataTable';
+import { CultivoFormModal } from '../components/modals/CultivoFormModal';
+import { cultivosService } from '../services/cultivosService';
+import { useAlert } from '../hooks/useAlert';
 import './CultivosPage.css';
 
-export default function CultivosPage({ onNavigate, currentPage }) {
+export default function CultivosPage() {
+  const [showModal, setShowModal] = useState(false);
+  const [cultivos, setCultivos] = useState([]);
+  const [zonas, setZonas] = useState([]);
   const [selectedCultivo, setSelectedCultivo] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [historialVisible, setHistorialVisible] = useState(null);
+  const [historial, setHistorial] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { showSuccess, showError } = useAlert();
 
-  const surcos = [
-    {
-      id: 1,
-      nombre: 'Surco A',
-      cultivos: [
-        {
-          id: 1,
-          name: 'Betabel',
-          image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=300&h=200&fit=crop',
-          surco: 'Surco A',
-          source: 'Fuente A',
-        },
-        {
-          id: 2,
-          name: 'Zanahoria',
-          image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd64b11?w=300&h=200&fit=crop',
-          surco: 'Surco A',
-          source: 'Fuente A',
-        },
-        {
-          id: 3,
-          name: 'Lechuga',
-          image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd64b11?w=300&h=200&fit=crop',
-          surco: 'Surco A',
-          source: 'Fuente A',
-        },
-        {
-          id: 4,
-          name: 'Espinaca',
-          image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd64b11?w=300&h=200&fit=crop',
-          surco: 'Surco A',
-          source: 'Fuente A',
-        },
-      ],
-    },
-    {
-      id: 2,
-      nombre: 'Surco B',
-      cultivos: [
-        {
-          id: 5,
-          name: 'Tomate',
-          image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=300&h=200&fit=crop',
-          surco: 'Surco B',
-          source: 'Fuente B',
-        },
-        {
-          id: 6,
-          name: 'Tomate',
-          image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=300&h=200&fit=crop',
-          surco: 'Surco B',
-          source: 'Fuente B',
-        },
-        {
-          id: 7,
-          name: 'Tomate',
-          image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=300&h=200&fit=crop',
-          surco: 'Surco B',
-          source: 'Fuente B',
-        },
-        {
-          id: 8,
-          name: 'Tomate',
-          image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=300&h=200&fit=crop',
-          surco: 'Surco B',
-          source: 'Fuente B',
-        },
-      ],
-    },
-    {
-      id: 3,
-      nombre: 'Surco C',
-      cultivos: [
-        {
-          id: 9,
-          name: 'Tomatillo verde',
-          image: 'https://images.unsplash.com/photo-1464922713794-2ad667be5744?w=300&h=200&fit=crop',
-          surco: 'Surco C',
-          source: 'Fuente C',
-        },
-        {
-          id: 10,
-          name: 'Tomatillo verde',
-          image: 'https://images.unsplash.com/photo-1464922713794-2ad667be5744?w=300&h=200&fit=crop',
-          surco: 'Surco C',
-          source: 'Fuente C',
-        },
-        {
-          id: 11,
-          name: 'Tomatillo verde',
-          image: 'https://images.unsplash.com/photo-1464922713794-2ad667be5744?w=300&h=200&fit=crop',
-          surco: 'Surco C',
-          source: 'Fuente C',
-        },
-        {
-          id: 12,
-          name: 'Tomatillo verde',
-          image: 'https://images.unsplash.com/photo-1464922713794-2ad667be5744?w=300&h=200&fit=crop',
-          surco: 'Surco C',
-          source: 'Fuente C',
-        },
-      ],
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    setLoading(true);
+    try {
+      // API CALL: GET /api/cultivos
+      const cultivosFetch = await cultivosService.getCultivos();
+      const zonasFetch = await cultivosService.getZonas();
+      setCultivos(cultivosFetch);
+      setZonas(zonasFetch);
+    } catch (error) {
+      showError('Error al cargar cultivos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAbrirModal = (cultivo = null) => {
+    setSelectedCultivo(cultivo);
+    setShowModal(true);
+  };
+
+  const handleGuardar = async (datos) => {
+    try {
+      if (selectedCultivo) {
+        // API CALL: PUT /api/cultivos/:id
+        await cultivosService.actualizarCultivo(selectedCultivo.id, datos);
+        showSuccess('Cultivo actualizado correctamente');
+      } else {
+        // API CALL: POST /api/cultivos
+        await cultivosService.crearCultivo(datos);
+        showSuccess('Cultivo creado correctamente');
+      }
+      cargarDatos();
+      setShowModal(false);
+    } catch (error) {
+      showError('Error al guardar cultivo');
+    }
+  };
+
+  const handleEliminar = async (id) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este cultivo?')) return;
+    
+    try {
+      // API CALL: DELETE /api/cultivos/:id
+      await cultivosService.eliminarCultivo(id);
+      showSuccess('Cultivo eliminado correctamente');
+      cargarDatos();
+    } catch (error) {
+      showError('Error al eliminar cultivo');
+    }
+  };
+
+  const handleVerHistorial = async (cultivo) => {
+    try {
+      // API CALL: GET /api/cultivos/:id/historial
+      const hist = await cultivosService.getHistorialCultivo(cultivo.id);
+      setHistorial(hist);
+      setHistorialVisible(cultivo.id);
+    } catch (error) {
+      showError('Error al cargar historial');
+    }
+  };
+
+  const columnas = [
+    { key: 'nombre_cultivo', label: 'Cultivo' },
+    { key: 'variedad', label: 'Variedad' },
+    { key: 'fecha_siembra', label: 'Fecha Siembra' },
+    { key: 'zona_id', label: 'Zona', render: (val) => `Zona ${val}` },
+    { 
+      key: 'estado', 
+      label: 'Estado',
+      render: (val) => {
+        const estados = { saludable: 'Saludable', requiere_atencion: 'Requiere atención', critico: 'Crítico' };
+        return <span className={`badge badge-${val}`}>{estados[val]}</span>;
+      }
     },
   ];
 
-  const handleEditCultivo = (cultivo) => {
-    setSelectedCultivo(cultivo);
-    setShowEditModal(true);
-  };
-
   return (
-    <div className="dashboard-layout">
-      <Sidebar onNavigate={onNavigate} currentPage={currentPage} />
-      <div className="dashboard-main">
-        <Header onAddCultivo={() => {}} />
-        <div className="cultivos-content">
-          {surcos.map((surco) => (
-            <section key={surco.id} className="surco-section">
-              <h2>{surco.nombre}</h2>
-              <div className="cultivos-grid">
-                {surco.cultivos.map((cultivo) => (
-                  <div
-                    key={cultivo.id}
-                    className="cultivo-card-large"
-                    onClick={() => handleEditCultivo(cultivo)}
-                  >
-                    <img src={cultivo.image} alt={cultivo.name} />
-                    <div className="cultivo-card-content">
-                      <span className="badge badge-cultivo">{cultivo.name}</span>
-                      <span className="badge badge-source">{cultivo.source}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
+    <div className="cultivos-page">
+      <Header />
+      <main className="cultivos-main">
+        <div className="cultivos-header">
+          <h1>Gestión de Cultivos</h1>
+          <button 
+            className="btn-primary"
+            onClick={() => handleAbrirModal()}
+          >
+            + Nuevo Cultivo
+          </button>
         </div>
-      </div>
 
-      <EditCultivoModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        cultivo={selectedCultivo}
-      />
+        {/* Tabla de Cultivos */}
+        <DataTable
+          titulo="Cultivos Activos"
+          columnas={columnas}
+          datos={cultivos}
+          cargando={loading}
+          onEditar={handleAbrirModal}
+          onEliminar={handleEliminar}
+          acciones={(cultivo) => (
+            <button 
+              className="btn-secundario"
+              onClick={() => handleVerHistorial(cultivo)}
+            >
+              Historial
+            </button>
+          )}
+        />
+
+        {/* Historial de Cultivo */}
+        {historialVisible && (
+          <section className="historial-section">
+            <h2>Historial del Cultivo</h2>
+            <table className="historial-table">
+              <thead>
+                <tr>
+                  <th>Evento</th>
+                  <th>Fecha</th>
+                  <th>Notas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historial.map((evento, idx) => (
+                  <tr key={idx}>
+                    <td>{evento.evento}</td>
+                    <td>{evento.fecha}</td>
+                    <td>{evento.notas}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* Modal de Formulario */}
+        {showModal && (
+          <CultivoFormModal
+            cultivo={selectedCultivo}
+            zonas={zonas}
+            onGuardar={handleGuardar}
+            onCerrar={() => {
+              setShowModal(false);
+              setSelectedCultivo(null);
+            }}
+          />
+        )}
+      </main>
     </div>
   );
 }
